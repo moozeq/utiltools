@@ -20,53 +20,12 @@ class Book {
     }
 }
 
-function delay(n) {
-    return new Promise(function (resolve) {
-        setTimeout(resolve, n * 1000);
-    });
-}
-
 function getPagesCount() {
     return Math.max(
         ...Array.from(document.querySelectorAll('[data-page]'))
             .map(page => page.getAttribute('data-page')).filter(pageNum => /^\d+$/.test(pageNum))
             .map(pageNum => parseInt(pageNum))
     );
-}
-
-function nextPage() {
-    document.querySelector('[aria-label="Next"]').click();
-}
-
-// Function to download books from lc.
-async function importBooks() {
-    const pagesCount = getPagesCount();
-    let books = [];
-
-    for (let i = 0; i < pagesCount; ++i) {
-        // extract all info about books
-        Array.from(document.querySelectorAll(".authorAllBooks__single")).forEach(bookNode => {
-            const title = bookNode.querySelector(".authorAllBooks__singleTextTitle")
-                .innerHTML.trim();
-            const author = bookNode.querySelector(".authorAllBooks__singleTextAuthor")
-                .firstChild.innerHTML.trim();
-            const shelves = Array.from(bookNode.querySelectorAll(".authorAllBooks__singleTextShelfRight a"))
-                .map(shelf => shelf.innerHTML.trim());
-            const rates = Array.from(bookNode.querySelectorAll(".listLibrary__ratingStarsNumber"))
-                .map(rate => rate.innerHTML.trim());
-            let readDate; // try to get read date if set
-            try {
-                readDate = bookNode.querySelector(".authorAllBooks__singleImg div").innerHTML.split('<br>')[1].trim();
-            } catch (e) {
-                readDate = '';
-            }
-            books.push(new Book(title, author, rates[0], readDate, shelves, rates[1]));
-        });
-        console.log(`Page ${i + 1}, scrapped = ${books.length} books.`);
-        nextPage();
-        await delay(5);
-    }
-    return books;
 }
 
 // Function to download data to a file.
@@ -89,4 +48,48 @@ function download(data, filename, type) {
     }
 }
 
-download(JSON.stringify(await importBooks(), null, 4), 'lc_books.json', 'json');
+async function importBooksAPI() {
+    const pagesCount = getPagesCount();
+    const objId = document.querySelector('#objectId').value;
+
+    let pagesNums = Array.from({length: pagesCount}, (_, i) => i + 1);
+    let promises = pagesNums.map(async (pageNum) => {
+        const response = await fetch("https://lubimyczytac.pl/profile/getLibraryBooksList", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                'X-Csrf-Token': document.querySelector('meta[name="csrf-token"]').content,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: `page=${pageNum}&listId=booksFilteredList&showFirstLetter=0&paginatorType=Standard&porzadek=malejaco&own=1&objectId=${objId}&own=1&paginatorType=Standard`
+        });
+        const books = await response.json();
+        let parser = new DOMParser();
+        return parser.parseFromString(books.data.content, 'text/html');
+    });
+    let books = [];
+    let pages = await Promise.all(promises);
+    pages.forEach(htmlPage => {
+        // extract all info about books
+        Array.from(htmlPage.querySelectorAll(".authorAllBooks__single")).forEach(bookNode => {
+            const title = bookNode.querySelector(".authorAllBooks__singleTextTitle")
+                .innerHTML.trim();
+            const author = bookNode.querySelector(".authorAllBooks__singleTextAuthor")
+                .firstChild.innerHTML.trim();
+            const shelves = Array.from(bookNode.querySelectorAll(".authorAllBooks__singleTextShelfRight a"))
+                .map(shelf => shelf.innerHTML.trim());
+            const rates = Array.from(bookNode.querySelectorAll(".listLibrary__ratingStarsNumber"))
+                .map(rate => rate.innerHTML.trim());
+            let readDate; // try to get read date if set
+            try {
+                readDate = bookNode.querySelector(".authorAllBooks__singleImg div").innerHTML.split('<br>')[1].trim();
+            } catch (e) {
+                readDate = '';
+            }
+            books.push(new Book(title, author, rates[0], readDate, shelves, rates[1]));
+        });
+    });
+    return books;
+}
+
+download(JSON.stringify(await importBooksAPI(), null, 4), 'lc_books.json', 'json');

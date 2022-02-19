@@ -21,11 +21,12 @@ To use this exporter:
  */
 
 class Book {
-    constructor(name, author, rate, read_date, shelves, average_rate) {
+    constructor(name, author, rate, opinion, read_date, shelves, average_rate) {
         this.name = name;
         this.author = author;
         this.read_date = read_date;
         this.rate = rate;
+        this.opinion = opinion;
         this.average_rate = average_rate;
         this.shelves = shelves;
     }
@@ -91,13 +92,20 @@ async function importBooksAPI() {
                 .map(shelf => shelf.innerHTML.trim());
             const rates = Array.from(bookNode.querySelectorAll(".listLibrary__ratingStarsNumber"))
                 .map(rate => rate.innerHTML.trim());
+            let opinion; // try to get opinion if added
+            try {
+                opinion = bookNode.querySelector('.comment-cloud__body .p-collapsed')
+                    .innerHTML.trim();
+            } catch (e) {
+                opinion = '';
+            }
             let readDate; // try to get read date if set
             try {
                 readDate = bookNode.querySelector(".authorAllBooks__singleImg div").innerHTML.split('<br>')[1].trim();
             } catch (e) {
                 readDate = '';
             }
-            books.push(new Book(title, author, rates[0], readDate, shelves, rates[1]));
+            books.push(new Book(title, author, rates[0], opinion, readDate, shelves, rates[1]));
         });
     });
     return books;

@@ -1,11 +1,22 @@
 /*
-To use this importer:
 
-    1. Go to your library: https://lubimyczytac.pl/biblioteczka
-    2. Hit F12
-    3. Paste text from this file and hit Enter
-    4. Wait for all pages to be scrapped.
-    5. File in JSON format with all your library will available to download.
+[POLSKI]
+Żeby wyeksportować swoje książki:
+
+    1. Wejdź na adres swojej biblioteczki (musisz być zalogowany): https://lubimyczytac.pl/biblioteczka
+    2. Naciśnij F12 i przejdź do zakładki KONSOLA
+    3. Skopiuj cały tekst z tego pliku i wklej go w linii na samym dole, naciśnij ENTER
+    4. Poczekaj aż ściągną się wszystkie strony z twoimi książkami
+    5. Będziesz mógł pobrać plik w formacie JSON z twoją biblioteką, będą tam tytuły, autorzy, oceny, półki
+
+[ENGLISH]
+To use this exporter:
+
+    1. Go to your library (you must be logged in): https://lubimyczytac.pl/biblioteczka
+    2. Hit F12 and go to CONSOLE tab
+    3. Paste text from this file in the line at the bottom and hit ENTER
+    4. Wait for all pages to be scrapped
+    5. File in JSON format with all your books, ratings, shelves will be available to download
 
  */
 

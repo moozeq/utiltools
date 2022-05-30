@@ -85,23 +85,23 @@ async function importBooksAPI() {
         // extract all info about books
         Array.from(htmlPage.querySelectorAll(".authorAllBooks__single")).forEach(bookNode => {
             const title = bookNode.querySelector(".authorAllBooks__singleTextTitle")
-                .innerHTML.trim();
+                ?.innerHTML?.trim();
             const author = bookNode.querySelector(".authorAllBooks__singleTextAuthor")
-                .firstChild.innerHTML.trim();
+                ?.firstChild?.innerHTML?.trim();
             const shelves = Array.from(bookNode.querySelectorAll(".authorAllBooks__singleTextShelfRight a"))
-                .map(shelf => shelf.innerHTML.trim());
+                .map(shelf => shelf?.innerHTML.trim());
             const rates = Array.from(bookNode.querySelectorAll(".listLibrary__ratingStarsNumber"))
-                .map(rate => rate.innerHTML.trim());
+                .map(rate => rate?.innerHTML.trim());
             let opinion; // try to get opinion if added
             try {
                 opinion = bookNode.querySelector('.comment-cloud__body .p-collapsed')
-                    .innerHTML.trim();
+                    ?.innerHTML?.trim();
             } catch (e) {
                 opinion = '';
             }
             let readDate; // try to get read date if set
             try {
-                readDate = bookNode.querySelector(".authorAllBooks__singleImg div").innerHTML.split('<br>')[1].trim();
+                readDate = bookNode.querySelector(".authorAllBooks__singleImg div")?.innerHTML?.split('<br>')[1]?.trim();
             } catch (e) {
                 readDate = '';
             }

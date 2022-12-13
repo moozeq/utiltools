@@ -33,11 +33,7 @@ class Book {
 }
 
 function getPagesCount() {
-    return Math.max(
-        ...Array.from(document.querySelectorAll('[data-page]'))
-            .map(page => page.getAttribute('data-page')).filter(pageNum => /^\d+$/.test(pageNum))
-            .map(pageNum => parseInt(pageNum))
-    );
+    return parseInt(document.querySelector('.paginationList__info span').textContent.trim());
 }
 
 // Function to download data to a file.

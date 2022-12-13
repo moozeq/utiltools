@@ -21,7 +21,15 @@ To use this exporter:
  */
 
 class Book {
-    constructor(name, author, rate, opinion, read_date, shelves, average_rate) {
+    constructor(name = '',
+                author = '',
+                rate = 0,
+                opinion = '',
+                read_date = '',
+                shelves = [],
+                average_rate = 0,
+                href = '',
+                isbn = '') {
         this.name = name;
         this.author = author;
         this.read_date = read_date;
@@ -29,6 +37,8 @@ class Book {
         this.opinion = opinion;
         this.average_rate = average_rate;
         this.shelves = shelves;
+        this.href = href
+        this.isbn = isbn
     }
 }
 
@@ -56,6 +66,32 @@ function download(data, filename, type) {
     }
 }
 
+async function getBooksDetails(hrefs) {
+    let promises = hrefs.map(async (href) => {
+        const response = await fetch(href, {
+            method: "GET",
+            headers: {
+                'Content-Type': 'text/html; charset=UTF-8'
+            }
+        });
+        const bookPage = await response.text();
+        let parser = new DOMParser();
+        return parser.parseFromString(bookPage, 'text/html');
+    });
+    let booksDetails = {}
+    let booksPages = await Promise.all(promises);
+    booksPages.forEach(bookPage => {
+        const href = bookPage.querySelector('meta[property="og:url"]')?.content
+        booksDetails[href] = {
+            'isbn': bookPage.querySelector('meta[property="books:isbn"]')?.content,
+            'author': bookPage.querySelector('meta[property="books:author"]')?.content,
+            'rating': parseInt(bookPage.querySelector('meta[property="books:rating:value"]')?.content),
+            'href': href
+        }
+    })
+    return booksDetails;
+}
+
 async function importBooksAPI() {
     const pagesCount = getPagesCount();
     const objId = document.querySelector('#objectId').value;
@@ -75,13 +111,15 @@ async function importBooksAPI() {
         let parser = new DOMParser();
         return parser.parseFromString(books.data.content, 'text/html');
     });
-    let books = [];
+    let books = {};
     let pages = await Promise.all(promises);
     pages.forEach(htmlPage => {
         // extract all info about books
         Array.from(htmlPage.querySelectorAll(".authorAllBooks__single")).forEach(bookNode => {
             const title = bookNode.querySelector(".authorAllBooks__singleTextTitle")
                 ?.innerHTML?.trim();
+            const href = bookNode.querySelector(".authorAllBooks__singleTextTitle")
+                ?.href;
             const author = bookNode.querySelector(".authorAllBooks__singleTextAuthor")
                 ?.firstChild?.innerHTML?.trim();
             const shelves = Array.from(bookNode.querySelectorAll(".authorAllBooks__singleTextShelfRight a"))
@@ -101,10 +139,16 @@ async function importBooksAPI() {
             } catch (e) {
                 readDate = '';
             }
-            books.push(new Book(title, author, rates[0], opinion, readDate, shelves, rates[1]));
+            books[href] = new Book(title, author, rates[0], opinion, readDate, shelves, rates[1], href);
         });
     });
-    return books;
+
+    // Get book details, including ISBN and add them for the books.
+    let booksDetails = await getBooksDetails(Object.keys(books));
+    for (const [href, details] of Object.entries(booksDetails)) {
+        books[href].isbn = details.isbn;
+    }
+    return Object.values(books);
 }
 
 download(JSON.stringify(await importBooksAPI(), null, 4), 'lc_books.json', 'json');

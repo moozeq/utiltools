@@ -1,0 +1,8 @@
+# Utility Tools
+
+| File                 | Description                                                                                              | Quickstart                                                                                               |
+|----------------------|----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| `files_merger.py`    | Merge files from different directories and remove duplicates                                             | `./files_merger.py a/ b/ c/ --out merged`                                                                |
+| `lc_exporter.js`     | Export your library from https://lubimyczytac.pl/ to JSON file                                           | Go to https://lubimyczytac.pl/biblioteczka, press F12, go to `Console` and copy paste a whole `.js` file |
+| `lc_to_goodreads.py` | Convert JSON file from `lc_exporter.js` to CSV file to import your library to https://www.goodreads.com/ | `./lc_to_goodreads.py books.json`                                                                        |
+| `reddit_news.py`      | Show recent topics from Reddit in the console sorted by importance                                       | `./reddit_news.py --subreddit worldnews`                                                                 |

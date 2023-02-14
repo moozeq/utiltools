@@ -40,7 +40,7 @@ def to_string(*attrs) -> str:
 def convert_to_strings(json_file: str, def_read_date: str) -> list[str]:
     """Convert JSON file to list of string for CSV file."""
 
-    with open(json_file) as f:
+    with open(json_file, encoding='utf-8') as f:
         books = json.load(f)
 
     return [
@@ -78,5 +78,5 @@ if __name__ == '__main__':
     books_as_strings = [bs for bs in books_as_strings if bs]
     base_filename = args.file[:-len('.json')]
     out_filename = args.out if args.out else f'{base_filename}.csv'
-    with open(out_filename, 'w') as f:
+    with open(out_filename, 'w', encoding='utf-8') as f:
         f.writelines('\n'.join([GR_FILE_HEADER, *books_as_strings]))
